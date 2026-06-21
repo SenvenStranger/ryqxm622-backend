@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.teach.mapper.SysProjectMemberMapper">
+
+    <resultMap type="com.ruoyi.teach.domain.SysProjectMember" id="SysProjectMemberResult">
+        <result property="memberId" column="member_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="memberName" column="member_name"/>
+        <result property="memberRole" column="member_role"/>
+        <result property="title" column="title"/>
+        <result property="degree" column="degree"/>
+        <result property="specialty" column="specialty"/>
+        <result property="workloadHours" column="workload_hours"/>
+        <result property="contribution" column="contribution"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="joinDate" column="join_date"/>
+        <result property="isActive" column="is_active"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectMemberVo">
+        select m.member_id, m.project_id, p.project_name, m.member_name, m.member_role,
+               m.title, m.degree, m.specialty, m.workload_hours, m.contribution,
+               m.phone, m.email, m.join_date, m.is_active, m.remark,
+               m.create_by, m.create_time, m.update_by, m.update_time
+        from sys_project_member m
+        left join sys_scientific_project p on m.project_id = p.project_id
+    </sql>
+
+    <select id="selectMemberList" parameterType="com.ruoyi.teach.domain.SysProjectMember" resultMap="SysProjectMemberResult">
+        <include refid="selectMemberVo"/>
+        <where>
+            <if test="projectId != null">and m.project_id = #{projectId}</if>
+            <if test="memberName != null and memberName != ''">and m.member_name like concat('%', #{memberName}, '%')</if>
+            <if test="memberRole != null and memberRole != ''">and m.member_role = #{memberRole}</if>
+            <if test="isActive != null and isActive != ''">and m.is_active = #{isActive}</if>
+        </where>
+        order by m.create_time desc
+    </select>
+
+    <select id="selectMemberById" parameterType="Long" resultMap="SysProjectMemberResult">
+        <include refid="selectMemberVo"/>
+        where m.member_id = #{memberId}
+    </select>
+
+    <insert id="insertMember" parameterType="com.ruoyi.teach.domain.SysProjectMember" useGeneratedKeys="true" keyProperty="memberId">
+        insert into sys_project_member
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="memberName != null">member_name,</if>
+            <if test="memberRole != null">member_role,</if>
+            <if test="title != null">title,</if>
+            <if test="degree != null">degree,</if>
+            <if test="specialty != null">specialty,</if>
+            <if test="workloadHours != null">workload_hours,</if>
+            <if test="contribution != null">contribution,</if>
+            <if test="phone != null">phone,</if>
+            <if test="email != null">email,</if>
+            <if test="joinDate != null">join_date,</if>
+            <if test="isActive != null">is_active,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="memberName != null">#{memberName},</if>
+            <if test="memberRole != null">#{memberRole},</if>
+            <if test="title != null">#{title},</if>
+            <if test="degree != null">#{degree},</if>
+            <if test="specialty != null">#{specialty},</if>
+            <if test="workloadHours != null">#{workloadHours},</if>
+            <if test="contribution != null">#{contribution},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="email != null">#{email},</if>
+            <if test="joinDate != null">#{joinDate},</if>
+            <if test="isActive != null">#{isActive},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateMember" parameterType="com.ruoyi.teach.domain.SysProjectMember">
+        update sys_project_member
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="memberName != null">member_name = #{memberName},</if>
+            <if test="memberRole != null">member_role = #{memberRole},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="degree != null">degree = #{degree},</if>
+            <if test="specialty != null">specialty = #{specialty},</if>
+            <if test="workloadHours != null">workload_hours = #{workloadHours},</if>
+            <if test="contribution != null">contribution = #{contribution},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="joinDate != null">join_date = #{joinDate},</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </trim>
+        where member_id = #{memberId}
+    </update>
+
+    <delete id="deleteMemberById" parameterType="Long">
+        delete from sys_project_member where member_id = #{memberId}
+    </delete>
+
+    <delete id="deleteMemberByIds" parameterType="Long">
+        delete from sys_project_member where member_id in
+        <foreach item="memberId" collection="array" open="(" separator="," close=")">
+            #{memberId}
+        </foreach>
+    </delete>
+
+    <select id="countByProjectId" parameterType="Long" resultType="Integer">
+        SELECT COUNT(*) FROM sys_project_member
+        WHERE project_id = #{projectId} AND del_flag = '0' AND is_active = '1'
+    </select>
+
+</mapper>

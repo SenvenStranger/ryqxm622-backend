@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.teach.mapper.SysScientificProjectMapper">
+
+    <resultMap type="com.ruoyi.teach.domain.SysScientificProject" id="SysScientificProjectResult">
+        <id     property="projectId"           column="project_id"           />
+        <result property="projectCode"         column="project_code"         />
+        <result property="projectName"         column="project_name"         />
+        <result property="projectType"         column="project_type"         />
+        <result property="projectLevel"       column="project_level"       />
+        <result property="subjectCategory"    column="subject_category"    />
+        <result property="sourceFrom"          column="source_from"          />
+        <result property="fundingAmount"      column="funding_amount"      />
+        <result property="startDate"          column="start_date"          />
+        <result property="endDate"             column="end_date"             />
+        <result property="projectStatus"      column="project_status"      />
+        <result property="principalName"      column="principal_name"      />
+        <result property="principalPhone"     column="principal_phone"     />
+        <result property="principalEmail"      column="principal_email"      />
+        <result property="deptId"              column="dept_id"              />
+        <result property="researchDirection"  column="research_direction"  />
+        <result property="projectIntro"        column="project_intro"        />
+        <result property="objectives"          column="objectives"          />
+        <result property="methods"             column="methods"             />
+        <result property="innovations"         column="innovations"         />
+        <result property="imageUrl"            column="image_url"            />
+        <result property="attachments"         column="attachments"         />
+        <result property="delFlag"              column="del_flag"              />
+        <result property="createBy"            column="create_by"            />
+        <result property="createTime"          column="create_time"          />
+        <result property="updateBy"            column="update_by"            />
+        <result property="updateTime"          column="update_time"          />
+        <result property="remark"              column="remark"              />
+        <result property="deptName"            column="dept_name"            />
+        <association property="memberCount" column="project_id" 
+            select="com.ruoyi.teach.mapper.SysProjectMemberMapper.countByProjectId" />
+        <association property="completedMilestones" column="project_id"
+            select="com.ruoyi.teach.mapper.SysProjectMilestoneMapper.countCompletedByProjectId" />
+    </resultMap>
+
+    <sql id="selectProjectVo">
+        SELECT p.*, d.dept_name
+        FROM sys_scientific_project p
+        LEFT JOIN sys_dept d ON p.dept_id = d.dept_id
+    </sql>
+
+    <select id="selectProjectList" parameterType="com.ruoyi.teach.domain.SysScientificProject" resultMap="SysScientificProjectResult">
+        <include refid="selectProjectVo"/>
+        WHERE p.del_flag = '0'
+        <if test="projectCode != null and projectCode != ''">
+            AND p.project_code = #{projectCode}
+        </if>
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE CONCAT('%', #{projectName}, '%')
+        </if>
+        <if test="projectType != null and projectType != ''">
+            AND p.project_type = #{projectType}
+        </if>
+        <if test="projectLevel != null and projectLevel != ''">
+            AND p.project_level = #{projectLevel}
+        </if>
+        <if test="projectStatus != null and projectStatus != ''">
+            AND p.project_status = #{projectStatus}
+        </if>
+        <if test="principalName != null and principalName != ''">
+            AND p.principal_name LIKE CONCAT('%', #{principalName}, '%')
+        </if>
+        <if test="beginStartDate != null and beginStartDate != ''">
+            AND p.start_date &gt;= #{beginStartDate}
+        </if>
+        <if test="endStartDate != null and endStartDate != ''">
+            AND p.start_date &lt;= #{endStartDate}
+        </if>
+        <if test="deptId != null">
+            AND (p.dept_id = #{deptId} OR p.dept_id IN (SELECT dept_id FROM sys_dept WHERE ancestors LIKE CONCAT('%', #{deptId}, '%')))
+        </if>
+        ORDER BY p.create_time DESC
+    </select>
+
+    <select id="selectProjectById" parameterType="Long" resultMap="SysScientificProjectResult">
+        <include refid="selectProjectVo"/>
+        WHERE p.project_id = #{projectId}
+    </select>
+
+    <select id="selectProjectByCode" parameterType="String" resultMap="SysScientificProjectResult">
+        <include refid="selectProjectVo"/>
+        WHERE p.project_code = #{projectCode}
+    </select>
+
+    <select id="selectProjectAll" resultMap="SysScientificProjectResult">
+        SELECT project_id, project_code, project_name, project_status 
+        FROM sys_scientific_project 
+        WHERE del_flag = '0'
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectProjectStatistics" resultType="map">
+        SELECT 
+            COUNT(*) as totalProjects,
+            SUM(CASE WHEN project_status = '1' THEN 1 ELSE 0 END) as activeProjects,
+            SUM(CASE WHEN project_status = '2' THEN 1 ELSE 0 END) as completedProjects,
+            COALESCE(SUM(funding_amount), 0) as totalFunding,
+            SUM(CASE WHEN project_status = '0' THEN 1 ELSE 0 END) as pendingProjects
+        FROM sys_scientific_project
+        WHERE del_flag = '0'
+    </select>
+
+    <select id="selectProjectListForExport" parameterType="com.ruoyi.teach.domain.SysScientificProject" resultMap="SysScientificProjectResult">
+        <include refid="selectProjectVo"/>
+        WHERE p.del_flag = '0'
+        <if test="projectName != null and projectName != ''">
+            AND p.project_name LIKE CONCAT('%', #{projectName}, '%')
+        </if>
+        <if test="projectType != null and projectType != ''">
+            AND p.project_type = #{projectType}
+        </if>
+        <if test="projectStatus != null and projectStatus != ''">
+            AND p.project_status = #{projectStatus}
+        </if>
+        ORDER BY p.create_time DESC
+    </select>
+
+    <insert id="insertProject" parameterType="com.ruoyi.teach.domain.SysScientificProject" useGeneratedKeys="true" keyProperty="projectId">
+        INSERT INTO sys_scientific_project (
+            <if test="projectCode != null and projectCode != ''">project_code,</if>
+            <if test="projectName != null and projectName != ''">project_name,</if>
+            <if test="projectType != null">project_type,</if>
+            <if test="projectLevel != null">project_level,</if>
+            <if test="subjectCategory != null">subject_category,</if>
+            <if test="sourceFrom != null">source_from,</if>
+            <if test="fundingAmount != null">funding_amount,</if>
+            <if test="startDate != null">start_date,</if>
+            <if test="endDate != null">end_date,</if>
+            <if test="projectStatus != null">project_status,</if>
+            <if test="principalName != null">principal_name,</if>
+            <if test="principalPhone != null">principal_phone,</if>
+            <if test="principalEmail != null">principal_email,</if>
+            <if test="deptId != null">dept_id,</if>
+            <if test="researchDirection != null">research_direction,</if>
+            <if test="projectIntro != null">project_intro,</if>
+            <if test="objectives != null">objectives,</if>
+            <if test="methods != null">methods,</if>
+            <if test="innovations != null">innovations,</if>
+            <if test="imageUrl != null">image_url,</if>
+            <if test="attachments != null">attachments,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        ) VALUES (
+            <if test="projectCode != null and projectCode != ''">#{projectCode},</if>
+            <if test="projectName != null and projectName != ''">#{projectName},</if>
+            <if test="projectType != null">#{projectType},</if>
+            <if test="projectLevel != null">#{projectLevel},</if>
+            <if test="subjectCategory != null">#{subjectCategory},</if>
+            <if test="sourceFrom != null">#{sourceFrom},</if>
+            <if test="fundingAmount != null">#{fundingAmount},</if>
+            <if test="startDate != null">#{startDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="projectStatus != null">#{projectStatus},</if>
+            <if test="principalName != null">#{principalName},</if>
+            <if test="principalPhone != null">#{principalPhone},</if>
+            <if test="principalEmail != null">#{principalEmail},</if>
+            <if test="deptId != null">#{deptId},</if>
+            <if test="researchDirection != null">#{researchDirection},</if>
+            <if test="projectIntro != null">#{projectIntro},</if>
+            <if test="objectives != null">#{objectives},</if>
+            <if test="methods != null">#{methods},</if>
+            <if test="innovations != null">#{innovations},</if>
+            <if test="imageUrl != null">#{imageUrl},</if>
+            <if test="attachments != null">#{attachments},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            NOW()
+        )
+    </insert>
+
+    <update id="updateProject" parameterType="com.ruoyi.teach.domain.SysScientificProject">
+        UPDATE sys_scientific_project
+        <set>
+            <if test="projectCode != null and projectCode != ''">project_code = #{projectCode},</if>
+            <if test="projectName != null and projectName != ''">project_name = #{projectName},</if>
+            <if test="projectType != null">project_type = #{projectType},</if>
+            <if test="projectLevel != null">project_level = #{projectLevel},</if>
+            <if test="subjectCategory != null">subject_category = #{subjectCategory},</if>
+            <if test="sourceFrom != null">source_from = #{sourceFrom},</if>
+            <if test="fundingAmount != null">funding_amount = #{fundingAmount},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="projectStatus != null">project_status = #{projectStatus},</if>
+            <if test="principalName != null">principal_name = #{principalName},</if>
+            <if test="principalPhone != null">principal_phone = #{principalPhone},</if>
+            <if test="principalEmail != null">principal_email = #{principalEmail},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="researchDirection != null">research_direction = #{researchDirection},</if>
+            <if test="projectIntro != null">project_intro = #{projectIntro},</if>
+            <if test="objectives != null">objectives = #{objectives},</if>
+            <if test="methods != null">methods = #{methods},</if>
+            <if test="innovations != null">innovations = #{innovations},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="attachments != null">attachments = #{attachments},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = NOW()
+        </set>
+        WHERE project_id = #{projectId}
+    </update>
+
+    <delete id="deleteProjectById" parameterType="Long">
+        UPDATE sys_scientific_project SET del_flag = '1' WHERE project_id = #{projectId}
+    </delete>
+
+    <delete id="deleteProjectByIds" parameterType="Long">
+        UPDATE sys_scientific_project SET del_flag = '1' WHERE project_id IN
+        <foreach item="projectId" collection="array" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.teach.mapper.SysProjectMilestoneMapper">
+
+    <resultMap type="com.ruoyi.teach.domain.SysProjectMilestone" id="SysProjectMilestoneResult">
+        <result property="milestoneId" column="milestone_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="milestoneName" column="milestone_name"/>
+        <result property="milestoneType" column="milestone_type"/>
+        <result property="planDate" column="plan_date"/>
+        <result property="actualDate" column="actual_date"/>
+        <result property="milestoneStatus" column="milestone_status"/>
+        <result property="progressPercent" column="progress_percent"/>
+        <result property="description" column="description"/>
+        <result property="achievements" column="achievements"/>
+        <result property="problems" column="problems"/>
+        <result property="nextPlan" column="next_plan"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectMilestoneVo">
+        select m.milestone_id, m.project_id, p.project_name, m.milestone_name, m.milestone_type,
+               m.plan_date, m.actual_date, m.milestone_status, m.progress_percent,
+               m.description, m.achievements, m.problems, m.next_plan, m.remark,
+               m.create_by, m.create_time, m.update_by, m.update_time
+        from sys_project_milestone m
+        left join sys_scientific_project p on m.project_id = p.project_id
+    </sql>
+
+    <select id="selectMilestoneList" parameterType="com.ruoyi.teach.domain.SysProjectMilestone" resultMap="SysProjectMilestoneResult">
+        <include refid="selectMilestoneVo"/>
+        <where>
+            <if test="projectId != null">and m.project_id = #{projectId}</if>
+            <if test="milestoneType != null and milestoneType != ''">and m.milestone_type = #{milestoneType}</if>
+            <if test="milestoneStatus != null and milestoneStatus != ''">and m.milestone_status = #{milestoneStatus}</if>
+            <if test="milestoneName != null and milestoneName != ''">and m.milestone_name like concat('%', #{milestoneName}, '%')</if>
+        </where>
+        order by m.create_time desc
+    </select>
+
+    <select id="selectMilestoneById" parameterType="Long" resultMap="SysProjectMilestoneResult">
+        <include refid="selectMilestoneVo"/>
+        where m.milestone_id = #{milestoneId}
+    </select>
+
+    <insert id="insertMilestone" parameterType="com.ruoyi.teach.domain.SysProjectMilestone" useGeneratedKeys="true" keyProperty="milestoneId">
+        insert into sys_project_milestone
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="milestoneName != null">milestone_name,</if>
+            <if test="milestoneType != null">milestone_type,</if>
+            <if test="planDate != null">plan_date,</if>
+            <if test="actualDate != null">actual_date,</if>
+            <if test="milestoneStatus != null">milestone_status,</if>
+            <if test="progressPercent != null">progress_percent,</if>
+            <if test="description != null">description,</if>
+            <if test="achievements != null">achievements,</if>
+            <if test="problems != null">problems,</if>
+            <if test="nextPlan != null">next_plan,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="milestoneName != null">#{milestoneName},</if>
+            <if test="milestoneType != null">#{milestoneType},</if>
+            <if test="planDate != null">#{planDate},</if>
+            <if test="actualDate != null">#{actualDate},</if>
+            <if test="milestoneStatus != null">#{milestoneStatus},</if>
+            <if test="progressPercent != null">#{progressPercent},</if>
+            <if test="description != null">#{description},</if>
+            <if test="achievements != null">#{achievements},</if>
+            <if test="problems != null">#{problems},</if>
+            <if test="nextPlan != null">#{nextPlan},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateMilestone" parameterType="com.ruoyi.teach.domain.SysProjectMilestone">
+        update sys_project_milestone
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="milestoneName != null">milestone_name = #{milestoneName},</if>
+            <if test="milestoneType != null">milestone_type = #{milestoneType},</if>
+            <if test="planDate != null">plan_date = #{planDate},</if>
+            <if test="actualDate != null">actual_date = #{actualDate},</if>
+            <if test="milestoneStatus != null">milestone_status = #{milestoneStatus},</if>
+            <if test="progressPercent != null">progress_percent = #{progressPercent},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="achievements != null">achievements = #{achievements},</if>
+            <if test="problems != null">problems = #{problems},</if>
+            <if test="nextPlan != null">next_plan = #{nextPlan},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where milestone_id = #{milestoneId}
+    </update>
+
+    <delete id="deleteMilestoneById" parameterType="Long">
+        delete from sys_project_milestone where milestone_id = #{milestoneId}
+    </delete>
+
+    <delete id="deleteMilestoneByIds" parameterType="Long">
+        delete from sys_project_milestone where milestone_id in
+        <foreach item="milestoneId" collection="array" open="(" separator="," close=")">
+            #{milestoneId}
+        </foreach>
+    </delete>
+
+    <select id="countCompletedByProjectId" parameterType="Long" resultType="Integer">
+        SELECT COUNT(*) FROM sys_project_milestone
+        WHERE project_id = #{projectId} AND del_flag = '0' AND milestone_status = '1'
+    </select>
+
+</mapper>

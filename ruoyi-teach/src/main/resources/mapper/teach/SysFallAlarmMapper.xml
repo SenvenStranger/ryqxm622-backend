@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.teach.mapper.SysFallAlarmMapper">
+
+    <resultMap type="com.ruoyi.teach.domain.SysFallAlarm" id="SysFallAlarmResult">
+        <id     property="alarmId"         column="alarm_id"         />
+        <result property="deviceId"        column="device_id"        />
+        <result property="deviceCode"      column="device_code"      />
+        <result property="deviceName"      column="device_name"      />
+        <result property="userId"          column="user_id"          />
+        <result property="userName"        column="user_name"        />
+        <result property="alarmType"       column="alarm_type"       />
+        <result property="alarmLevel"      column="alarm_level"      />
+        <result property="alarmTime"       column="alarm_time"       />
+        <result property="fallProbability" column="fall_probability" />
+        <result property="fallType"        column="fall_type"        />
+        <result property="activityState"   column="activity_state"   />
+        <result property="heartRate"       column="heart_rate"       />
+        <result property="longitude"       column="longitude"        />
+        <result property="latitude"         column="latitude"        />
+        <result property="location"         column="location"        />
+        <result property="imageUrl"         column="image_url"        />
+        <result property="videoUrl"         column="video_url"        />
+        <result property="alarmStatus"      column="alarm_status"     />
+        <result property="handleTime"       column="handle_time"      />
+        <result property="handleBy"         column="handle_by"        />
+        <result property="handleResult"     column="handle_result"   />
+        <result property="notifyContacts"   column="notify_contacts"  />
+        <result property="notifyStatus"     column="notify_status"    />
+        <result property="remark"           column="remark"           />
+        <result property="createBy"         column="create_by"        />
+        <result property="createTime"       column="create_time"     />
+    </resultMap>
+
+    <sql id="selectAlarmVo">
+        SELECT a.alarm_id, a.device_id, a.device_code, a.device_name, a.user_id, a.user_name,
+               a.alarm_type, a.alarm_level, a.alarm_time, a.fall_probability, a.fall_type,
+               a.activity_state, a.heart_rate, a.longitude, a.latitude, a.location,
+               a.image_url, a.video_url, a.alarm_status, a.handle_time, a.handle_by,
+               a.handle_result, a.notify_contacts, a.notify_status, a.remark,
+               a.create_by, a.create_time
+        FROM sys_fall_alarm a
+    </sql>
+
+    <select id="selectAlarmList" resultMap="SysFallAlarmResult">
+        <include refid="selectAlarmVo"/>
+        <where>
+            <if test="deviceName != null and deviceName != ''">
+                AND a.device_name LIKE CONCAT('%', #{deviceName}, '%')
+            </if>
+            <if test="deviceCode != null and deviceCode != ''">
+                AND a.device_code = #{deviceCode}
+            </if>
+            <if test="userName != null and userName != ''">
+                AND a.user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="alarmType != null and alarmType != ''">
+                AND a.alarm_type = #{alarmType}
+            </if>
+            <if test="alarmLevel != null and alarmLevel != ''">
+                AND a.alarm_level = #{alarmLevel}
+            </if>
+            <if test="alarmStatus != null and alarmStatus != ''">
+                AND a.alarm_status = #{alarmStatus}
+            </if>
+            <if test="beginAlarmTime != null">
+                AND a.alarm_time &gt;= #{beginAlarmTime}
+            </if>
+            <if test="endAlarmTime != null">
+                AND a.alarm_time &lt;= CONCAT(#{endAlarmTime}, ' 23:59:59')
+            </if>
+        </where>
+        ORDER BY a.alarm_time DESC
+    </select>
+
+    <select id="selectAlarmById" resultMap="SysFallAlarmResult">
+        <include refid="selectAlarmVo"/>
+        WHERE a.alarm_id = #{alarmId}
+    </select>
+
+    <update id="updateAlarmStatus">
+        UPDATE sys_fall_alarm
+        SET alarm_status = #{status}, handle_by = #{handleBy}, handle_result = #{handleResult}, handle_time = NOW()
+        WHERE alarm_id = #{alarmId}
+    </update>
+
+    <select id="selectTodayAlarmStats" resultMap="SysFallAlarmResult">
+        <include refid="selectAlarmVo"/>
+        WHERE DATE(a.alarm_time) = CURDATE()
+        ORDER BY a.alarm_time DESC
+    </select>
+
+    <insert id="insertAlarm" parameterType="com.ruoyi.teach.domain.SysFallAlarm" useGeneratedKeys="true" keyProperty="alarmId">
+        INSERT INTO sys_fall_alarm(
+            <if test="deviceId != null">device_id,</if>
+            <if test="deviceCode != null">device_code,</if>
+            <if test="deviceName != null">device_name,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="userName != null">user_name,</if>
+            <if test="alarmType != null">alarm_type,</if>
+            <if test="alarmLevel != null">alarm_level,</if>
+            <if test="alarmTime != null">alarm_time,</if>
+            <if test="fallProbability != null">fall_probability,</if>
+            <if test="fallType != null">fall_type,</if>
+            <if test="activityState != null">activity_state,</if>
+            <if test="heartRate != null">heart_rate,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="location != null">location,</if>
+            <if test="imageUrl != null">image_url,</if>
+            <if test="videoUrl != null">video_url,</if>
+            <if test="alarmStatus != null">alarm_status,</if>
+            <if test="notifyContacts != null">notify_contacts,</if>
+            <if test="notifyStatus != null">notify_status,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        ) VALUES (
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="deviceCode != null">#{deviceCode},</if>
+            <if test="deviceName != null">#{deviceName},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="userName != null">#{userName},</if>
+            <if test="alarmType != null">#{alarmType},</if>
+            <if test="alarmLevel != null">#{alarmLevel},</if>
+            <if test="alarmTime != null">#{alarmTime},</if>
+            <if test="fallProbability != null">#{fallProbability},</if>
+            <if test="fallType != null">#{fallType},</if>
+            <if test="activityState != null">#{activityState},</if>
+            <if test="heartRate != null">#{heartRate},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="location != null">#{location},</if>
+            <if test="imageUrl != null">#{imageUrl},</if>
+            <if test="videoUrl != null">#{videoUrl},</if>
+            <if test="alarmStatus != null">#{alarmStatus},</if>
+            <if test="notifyContacts != null">#{notifyContacts},</if>
+            <if test="notifyStatus != null">#{notifyStatus},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            NOW()
+        )
+    </insert>
+
+    <delete id="deleteAlarmById">
+        DELETE FROM sys_fall_alarm WHERE alarm_id = #{alarmId}
+    </delete>
+
+    <delete id="deleteAlarmByIds">
+        DELETE FROM sys_fall_alarm WHERE alarm_id IN
+        <foreach item="alarmId" collection="array" open="(" separator="," close=")">
+            #{alarmId}
+        </foreach>
+    </delete>
+
+</mapper>

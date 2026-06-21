@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.teach.mapper.SysFallDeviceMapper">
+
+    <resultMap type="com.ruoyi.teach.domain.SysFallDevice" id="SysFallDeviceResult">
+        <id     property="deviceId"       column="device_id"       />
+        <result property="deviceName"     column="device_name"     />
+        <result property="deviceCode"     column="device_code"     />
+        <result property="deviceType"    column="device_type"     />
+        <result property="deviceModel"   column="device_model"    />
+        <result property="manufacturer"  column="manufacturer"   />
+        <result property="macAddress"    column="mac_address"     />
+        <result property="ipAddress"     column="ip_address"      />
+        <result property="longitude"     column="longitude"       />
+        <result property="latitude"      column="latitude"        />
+        <result property="location"      column="location"        />
+        <result property="userId"        column="user_id"         />
+        <result property="userName"       column="user_name"       />
+        <result property="userPhone"     column="user_phone"      />
+        <result property="status"         column="status"          />
+        <result property="batteryLevel"   column="battery_level"    />
+        <result property="lastHeartbeat"  column="last_heartbeat"  />
+        <result property="remark"         column="remark"          />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+    </resultMap>
+
+    <sql id="selectDeviceVo">
+        SELECT d.device_id, d.device_name, d.device_code, d.device_type, d.device_model,
+               d.manufacturer, d.mac_address, d.ip_address, d.longitude, d.latitude,
+               d.location, d.user_id, d.user_name, d.user_phone, d.status, d.battery_level,
+               d.last_heartbeat, d.remark, d.create_by, d.create_time, d.update_by, d.update_time,
+               (SELECT COUNT(*) FROM sys_fall_alarm a
+                WHERE a.device_id = d.device_id AND DATE(a.alarm_time) = CURDATE()) AS today_alarm_count
+        FROM sys_fall_device d
+    </sql>
+
+    <select id="selectDeviceList" resultMap="SysFallDeviceResult">
+        <include refid="selectDeviceVo"/>
+        <where>
+            <if test="deviceName != null and deviceName != ''">
+                AND d.device_name LIKE CONCAT('%', #{deviceName}, '%')
+            </if>
+            <if test="deviceCode != null and deviceCode != ''">
+                AND d.device_code = #{deviceCode}
+            </if>
+            <if test="deviceType != null and deviceType != ''">
+                AND d.device_type = #{deviceType}
+            </if>
+            <if test="status != null and status != ''">
+                AND d.status = #{status}
+            </if>
+            <if test="userName != null and userName != ''">
+                AND d.user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+        </where>
+        ORDER BY d.create_time DESC
+    </select>
+
+    <select id="selectByDeviceCode" resultMap="SysFallDeviceResult">
+        <include refid="selectDeviceVo"/>
+        WHERE d.device_code = #{deviceCode}
+    </select>
+
+    <select id="selectDeviceById" resultMap="SysFallDeviceResult">
+        <include refid="selectDeviceVo"/>
+        WHERE d.device_id = #{deviceId}
+    </select>
+
+    <update id="updateHeartbeat">
+        UPDATE sys_fall_device SET last_heartbeat = NOW(), status = '0' WHERE device_id = #{deviceId}
+    </update>
+
+    <update id="updateDeviceStatus">
+        UPDATE sys_fall_device SET status = #{status} WHERE device_id = #{deviceId}
+    </update>
+
+    <insert id="insertDevice" parameterType="com.ruoyi.teach.domain.SysFallDevice" useGeneratedKeys="true" keyProperty="deviceId">
+        INSERT INTO sys_fall_device(
+            <if test="deviceName != null and deviceName != ''">device_name,</if>
+            <if test="deviceCode != null and deviceCode != ''">device_code,</if>
+            <if test="deviceType != null and deviceType != ''">device_type,</if>
+            <if test="deviceModel != null">device_model,</if>
+            <if test="manufacturer != null">manufacturer,</if>
+            <if test="macAddress != null">mac_address,</if>
+            <if test="ipAddress != null">ip_address,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="location != null">location,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="userName != null">user_name,</if>
+            <if test="userPhone != null">user_phone,</if>
+            <if test="status != null">status,</if>
+            <if test="batteryLevel != null">battery_level,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        ) VALUES (
+            <if test="deviceName != null and deviceName != ''">#{deviceName},</if>
+            <if test="deviceCode != null and deviceCode != ''">#{deviceCode},</if>
+            <if test="deviceType != null and deviceType != ''">#{deviceType},</if>
+            <if test="deviceModel != null">#{deviceModel},</if>
+            <if test="manufacturer != null">#{manufacturer},</if>
+            <if test="macAddress != null">#{macAddress},</if>
+            <if test="ipAddress != null">#{ipAddress},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="location != null">#{location},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="userName != null">#{userName},</if>
+            <if test="userPhone != null">#{userPhone},</if>
+            <if test="status != null">#{status},</if>
+            <if test="batteryLevel != null">#{batteryLevel},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            NOW()
+        )
+    </insert>
+
+    <update id="updateDevice" parameterType="com.ruoyi.teach.domain.SysFallDevice">
+        UPDATE sys_fall_device
+        <set>
+            <if test="deviceName != null and deviceName != ''">device_name = #{deviceName},</if>
+            <if test="deviceType != null">device_type = #{deviceType},</if>
+            <if test="deviceModel != null">device_model = #{deviceModel},</if>
+            <if test="manufacturer != null">manufacturer = #{manufacturer},</if>
+            <if test="macAddress != null">mac_address = #{macAddress},</if>
+            <if test="ipAddress != null">ip_address = #{ipAddress},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="userName != null">user_name = #{userName},</if>
+            <if test="userPhone != null">user_phone = #{userPhone},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="batteryLevel != null">battery_level = #{batteryLevel},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = NOW()
+        </set>
+        WHERE device_id = #{deviceId}
+    </update>
+
+    <delete id="deleteDeviceById">
+        DELETE FROM sys_fall_device WHERE device_id = #{deviceId}
+    </delete>
+
+    <delete id="deleteDeviceByIds">
+        DELETE FROM sys_fall_device WHERE device_id IN
+        <foreach item="deviceId" collection="array" open="(" separator="," close=")">
+            #{deviceId}
+        </foreach>
+    </delete>
+
+</mapper>
