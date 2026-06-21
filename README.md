@@ -30,7 +30,7 @@
 - 字典管理、参数管理、操作日志、登录日志
 
 ## 技术栈
-- Spring Boot 2.x
+- Spring Boot 2.5.15
 - MyBatis
 - MySQL
 - RuoYi 权限框架（@PreAuthorize 注解鉴权）
